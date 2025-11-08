@@ -5,6 +5,7 @@ import com.ZUNr1.enums.DamageType;
 import com.ZUNr1.enums.Gender;
 
 
+import java.util.List;
 import java.util.Objects;
 
 public abstract class Individual {
@@ -18,6 +19,7 @@ public abstract class Individual {
     protected int level;
     protected Attributes attributes;
     protected Skills skills;
+    protected List<String> usedTerm;
     //因为字段太多，构造器写的非常臃肿，我们使用Builder类实现构造
     public abstract static class Builder {
         //这里因为Individual不允许实例化，所以Builder类也用abstract修饰，提醒子类实现
@@ -30,6 +32,7 @@ public abstract class Individual {
         protected int level;
         protected Attributes attributes;
         protected Skills skills;
+        protected List<String> usedTerm;
         public Builder(String id,String name,Gender gender,int level){
             validate(id,name,level);
             this.gender = gender;
@@ -41,6 +44,7 @@ public abstract class Individual {
         public abstract Builder afflatus(Afflatus afflatus);
         public abstract Builder damageType(DamageType damageType);
         public abstract Builder skills(Skills skills);
+        public abstract Builder usedTerm(List<String> usedTerm);
         public abstract Individual build();
         private void validate(String id, String name, int level){
 
@@ -70,6 +74,7 @@ public abstract class Individual {
         this.damageType = builder.damageType;
         this.attributes = builder.attributes;
         this.skills = builder.skills;
+        this.usedTerm = builder.usedTerm;
     }
     public String getId() {
         return id;
@@ -98,6 +103,11 @@ public abstract class Individual {
     public DamageType getDamageType() {
         return damageType;
     }
+
+    public List<String> getUsedTerm() {
+        return usedTerm;
+    }
+
     @Override
     public boolean equals(Object obj){//equals编写先检查是不是本身，再看是不是空，，再看是不是同一类
         if (this == obj){

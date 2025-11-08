@@ -22,6 +22,7 @@ public class CharacterManage {
     private final Map<DamageType,List<Characters>> damageTypeIndex;
     private final Map<Integer,List<Characters>> rarityIndex;
     //这四个是实现对应类型的查询，注意键值对的值是list，放的是对应类型的所有角色
+    private final Map<String,List<Characters>> termIndex;
     public CharacterManage(){
         //要初始化，new初始化就是让其是空集合而不是空指针
         this.charactersMap = new HashMap<>();
@@ -30,14 +31,29 @@ public class CharacterManage {
         this.damageTypeIndex = new HashMap<>();
         this.rarityIndex = new HashMap<>();
         this.genderIndex = new HashMap<>();
+        this.termIndex = new HashMap<>();
     }
     public void addCharacters(Characters  characters){
+        if (characters == null) {
+            //先验证角色的有效性
+            throw new IllegalArgumentException("角色不能为null");
+        }
         charactersMap.put(characters.getId(), characters);
         charactersList.add(characters);
         addToIndex(afflatusIndex,characters.getAfflatus(),characters);
         addToIndex(damageTypeIndex,characters.getDamageType(),characters);
         addToIndex(rarityIndex,characters.getRarity(),characters);
         addToIndex(genderIndex,characters.getGender(),characters);
+        List<String> usedTerm = characters.getUsedTerm();
+        //同样是防御性，这里要检查空
+        if (usedTerm != null){
+            for (String term : usedTerm){
+                if (term != null && !term.trim().isEmpty()){
+                    addToIndex(termIndex,term.trim(),characters);
+                }
+            }
+        }
+
         System.out.println("已添加"+ characters.getName() + "角色");
 
     }
@@ -66,6 +82,14 @@ public class CharacterManage {
         removeToIndex(damageTypeIndex,characters.getDamageType(),characters);
         removeToIndex(rarityIndex,characters.getRarity(),characters);
         removeToIndex(genderIndex,characters.getGender(),characters);
+        List<String> usedTerm = characters.getUsedTerm();
+        if (usedTerm != null){
+            for (String term : usedTerm){
+                if (term != null && !term.trim().isEmpty()){
+                    removeToIndex(termIndex,term.trim(),characters);
+                }
+            }
+        }
         System.out.println("已删除角色: " + characters.getName());
         return true;
 
@@ -106,6 +130,7 @@ public class CharacterManage {
     }
     public List<Characters> findByAfflatus(Afflatus afflatus){
         return afflatusIndex.getOrDefault(afflatus,new ArrayList<>());
+        //我们要想，要是找不到就抛出异常是不好的，对用户体验不好，不如返回空List
     }
     public List<Characters> findByDamageType(DamageType damageType){
         return damageTypeIndex.getOrDefault(damageType,new ArrayList<>());
@@ -115,6 +140,14 @@ public class CharacterManage {
     }
     public List<Characters> findByRarity(int rarity){
         return rarityIndex.getOrDefault(rarity,new ArrayList<>());
+    }
+    public List<Characters> findByTerm(String term) {
+        if (term == null || term.trim().isEmpty()) {
+            return new ArrayList<>();
+            //同样，这样处理，不要抛出异常，不要对用户太严格
+            //保持设计一致性很重要，建议所有查询方法都采用"宽容"的设计哲学！
+        }
+        return termIndex.getOrDefault(term.trim(), new ArrayList<>());
     }
     public List<Characters> findAllCharacters(){
         return new ArrayList<>(charactersList);
@@ -136,6 +169,12 @@ public class CharacterManage {
     }
     public int getDamageTypeNumber(DamageType damageType){
         return damageTypeIndex.getOrDefault(damageType,new ArrayList<>()).size();
+    }
+    public int getTermCharactersNumber(String term){
+        if (term == null || term.trim().isEmpty()) {
+            return 0;
+        }
+        return termIndex.getOrDefault(term.trim(), new ArrayList<>()).size();
     }
     public Map<Integer,Integer> getRarityStatistics(){
         //根据稀有度分类，返回所有稀有度对应的角色数量
