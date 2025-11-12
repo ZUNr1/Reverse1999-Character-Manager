@@ -1,41 +1,145 @@
 package com.ZUNr1.model;
 
+import com.ZUNr1.enums.SkillType;
+
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Skills {
-    private String arcaneSkill1;
-    private String arcaneSkill2;
-    private String arcaneSkill3;
-    private List<String> extraSkills;
+    private SkillDetail arcaneSkill1;
+    //包含了信息的技能
+    private SkillDetail arcaneSkill2;
+    private SkillDetail arcaneSkill3;
+    private List<SkillDetail> extraSkills;
+    public static class SkillDetail{
+        private String skillName;
+        //技能名字
+        private Map<Integer,SkillInLevel> skillInLevel;
+        //存放三个等级的技能描述，技能类型，技能故事
+        //个体是又一个新的内部类，对应其中一个等级的技能
+        public static class SkillDetailBuilder{
+            private String skillName;
+            private Map<Integer,SkillInLevel> skillInLevelMap;
+            public SkillDetailBuilder(String skillName){
+                if (skillName != null && !skillName.trim().isEmpty()){
+                    this.skillName = skillName;
+                    this.skillInLevelMap = new HashMap<>();
+                }else {
+                    throw new IllegalArgumentException("技能名不能为空");
+                }
+            }
+            public SkillDetailBuilder addSkillInLevel
+                    (int level,String skillDescribe,String skillStory,SkillType skillType){
+                if (this.skillInLevelMap.containsKey(level)){
+                    throw new IllegalArgumentException("该等级的技能已经存在");
+                }
+                SkillInLevel skillInLevel = new SkillInLevel(level, skillDescribe, skillStory, skillType);
+                this.skillInLevelMap.put(level,skillInLevel);
+                return this;
+            }
+            public SkillDetail build(){
+                if (skillInLevelMap.isEmpty()) {
+                    throw new IllegalStateException("至少需要添加一个技能等级");
+                }
+                return new SkillDetail(this);
+            }
+        }
+        private SkillDetail(SkillDetailBuilder skillDetailBuilder){
+            this.skillName = skillDetailBuilder.skillName;
+            this.skillInLevel = skillDetailBuilder.skillInLevelMap;
+        }
+
+        public String getSkillName() {
+            return skillName;
+        }
+
+        public Map<Integer, SkillInLevel> getSkillInLevel() {
+            return new HashMap<>(skillInLevel);
+        }
+    }
+    public static class SkillInLevel{
+        private int level;
+        private String skillDescribe;
+        private String skillStory;
+        private SkillType skillType;
+        public SkillInLevel(int level,String skillDescribe,String skillStory,SkillType skillType){
+            validate(level, skillDescribe, skillStory);
+            //检验
+            this.level = level;
+            this.skillDescribe = skillDescribe;
+            this.skillStory = skillStory;
+            this.skillType = skillType;
+        }
+        private void validate(int level,String skillDescribe,String skillStory){
+            if (level < 1 || level > 3){
+                throw new IllegalArgumentException("技能等级超出范围");
+            }
+            if (skillDescribe == null || skillDescribe.trim().isEmpty()){
+                throw new IllegalArgumentException("技能描述为空");
+            }
+            if (skillStory == null || skillStory.trim().isEmpty()){
+                throw new IllegalArgumentException("技能故事为空");
+            }
+        }
+
+        public int getLevel() {
+            return level;
+        }
+
+        public String getSkillDescribe() {
+            return skillDescribe;
+        }
+
+        public String getSkillStory() {
+            return skillStory;
+        }
+
+        public SkillType getSkillType() {
+            return skillType;
+        }
+    }
     public static class SkillsBuilder{
-        private String arcaneSkill1;
-        private String arcaneSkill2;
-        private String arcaneSkill3;
-        private List<String> extraSkills;
+        private SkillDetail arcaneSkill1;
+        private SkillDetail arcaneSkill2;
+        private SkillDetail arcaneSkill3;
+        private List<SkillDetail> extraSkills;
         public SkillsBuilder(){
 
-            this.arcaneSkill1 = "";
-            //对于字符串String，应该设为空值，避免空指针
-            this.arcaneSkill2 = "";
-            this.arcaneSkill3 = "";
+            this.arcaneSkill1 = createEmptySkill("未设置技能1");
+            //避免空指针，我们设置一个默认值，这样可以清楚看到没有的值
+            this.arcaneSkill2 = createEmptySkill("未设置技能2");
+            this.arcaneSkill3 = createEmptySkill("未设置大招");
             this.extraSkills = new ArrayList<>();
         }
-        public SkillsBuilder arcaneSkill1(String arcaneSkill1){
-            this.arcaneSkill1 = arcaneSkill1 == null ? "" : arcaneSkill1;
+        private SkillDetail createEmptySkill(String skillName){
+            return new SkillDetail.SkillDetailBuilder(skillName)
+                    .addSkillInLevel(1,"暂无描述","暂无故事",SkillType.VERSATILE)
+                    .build();
+            //builder构建
+        }
+        public SkillsBuilder arcaneSkill1(SkillDetail arcaneSkill1){
+            if (arcaneSkill1 != null){
+                this.arcaneSkill1 = arcaneSkill1;
+            }
             return this;
         }
-        public SkillsBuilder arcaneSkill2(String arcaneSkill2){
-            this.arcaneSkill2 = arcaneSkill2 == null ? "" : arcaneSkill2;
+        public SkillsBuilder arcaneSkill2(SkillDetail arcaneSkill2){
+            if (arcaneSkill2 != null){
+                this.arcaneSkill2 = arcaneSkill2;
+            }
             return this;
         }
-        public SkillsBuilder arcaneSkill3(String arcaneSkill3){
-            this.arcaneSkill3 = arcaneSkill3 == null ? "" : arcaneSkill3;
+        public SkillsBuilder arcaneSkill3(SkillDetail arcaneSkill3){
+            if (arcaneSkill3 != null){
+                this.arcaneSkill3 = arcaneSkill3;
+            }
             return this;
         }
-        public SkillsBuilder addExtraSkills(String extraSkill){
-            if (extraSkill != null && !extraSkill.trim().isEmpty()){
-                extraSkills.add(extraSkill.trim());
+        public SkillsBuilder addExtraSkills(SkillDetail extraSkill){
+            if (extraSkill != null) {
+                this.extraSkills.add(extraSkill);
             }
             return this;
         }
@@ -54,30 +158,35 @@ public class Skills {
         //这叫防御性拷贝
     }
 
-    public String getArcaneSkill1() {
+    public SkillDetail getArcaneSkill1() {
         return arcaneSkill1;
     }
 
-    public String getArcaneSkill2() {
+    public SkillDetail getArcaneSkill2() {
         return arcaneSkill2;
     }
 
-    public String getArcaneSkill3() {
+    public SkillDetail getArcaneSkill3() {
         return arcaneSkill3;
-        //知道吗，String类型不需要防御性拷贝，因为String类型不可变
     }
 
-    public List<String> getExtraSkills() {
+    public List<SkillDetail> getExtraSkills() {
         return new ArrayList<>(extraSkills);
-        //同样，这返回新建的副本，也是防御性拷贝，这也是防止被修改
+        //防御性拷贝，这样外界修改这个数组时不会把内部的数组也修改
     }
-
     @Override
-    public String toString(){
+    public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(String.format("一技能：%s\n二技能：%s\n大招：%s\n",arcaneSkill1,arcaneSkill2,arcaneSkill3));
-        if (!extraSkills.isEmpty()){
-            sb.append("额外技能：").append(String.join("\n",extraSkills));
+        sb.append("=== 技能图鉴 ===\n");
+        sb.append(String.format("技能1: %s\n", arcaneSkill1.getSkillName()));
+        sb.append(String.format("技能2: %s\n", arcaneSkill2.getSkillName()));
+        sb.append(String.format("大招: %s\n", arcaneSkill3.getSkillName()));
+
+        if (!extraSkills.isEmpty()) {
+            sb.append("额外技能:\n");
+            for (SkillDetail skill : extraSkills) {
+                sb.append(String.format("  - %s\n", skill.getSkillName()));
+            }
         }
         return sb.toString();
     }
