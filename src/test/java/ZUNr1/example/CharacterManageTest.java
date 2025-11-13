@@ -5,10 +5,12 @@ import com.ZUNr1.enums.Afflatus;
 import com.ZUNr1.enums.DamageType;
 import com.ZUNr1.enums.Gender;
 import com.ZUNr1.manager.CharacterManage;
-import com.ZUNr1.model.*;
+import com.ZUNr1.model.Attributes;
+import com.ZUNr1.model.Characters;
+import com.ZUNr1.model.Skills;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.List;

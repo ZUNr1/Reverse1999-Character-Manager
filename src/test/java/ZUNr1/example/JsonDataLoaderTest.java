@@ -4,11 +4,9 @@ package ZUNr1.example;
 import com.ZUNr1.enums.Afflatus;
 import com.ZUNr1.enums.DamageType;
 import com.ZUNr1.enums.Gender;
-import com.ZUNr1.model.Attributes;
-import com.ZUNr1.model.Skills;
 import com.ZUNr1.util.JsonDataLoader;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
@@ -16,7 +14,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 

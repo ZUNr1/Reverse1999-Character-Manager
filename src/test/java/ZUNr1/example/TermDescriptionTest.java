@@ -2,8 +2,8 @@ package ZUNr1.example;
 
 
 import com.ZUNr1.model.TermDescription;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 import java.util.Set;

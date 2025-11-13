@@ -10,9 +10,18 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class DamageTypeTest {
+
+    private static Stream<Arguments> provideValidTypes() {
+        return Stream.of(
+                Arguments.of(1, DamageType.REALITY),
+                Arguments.of(-1, DamageType.MENTAL),
+                Arguments.of(0, DamageType.GENESIS)
+        );
+    }
 
     @Test
     void testEnumValues() {
@@ -34,13 +43,5 @@ class DamageTypeTest {
         assertThrows(IllegalArgumentException.class, () -> {
             DamageType.fromType(invalidType);
         });
-    }
-
-    private static Stream<Arguments> provideValidTypes() {
-        return Stream.of(
-                Arguments.of(1, DamageType.REALITY),
-                Arguments.of(-1, DamageType.MENTAL),
-                Arguments.of(0, DamageType.GENESIS)
-        );
     }
 }

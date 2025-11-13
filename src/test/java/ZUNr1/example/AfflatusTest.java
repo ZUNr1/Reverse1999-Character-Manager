@@ -14,6 +14,17 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class AfflatusTest {
 
+    private static Stream<Arguments> provideValidTypes() {
+        return Stream.of(
+                Arguments.of(1, Afflatus.STAR),
+                Arguments.of(2, Afflatus.MINERAL),
+                Arguments.of(3, Afflatus.BEAST),
+                Arguments.of(4, Afflatus.PLANT),
+                Arguments.of(-1, Afflatus.SPIRIT),
+                Arguments.of(-2, Afflatus.INTELLECT)
+        );
+    }
+
     @Test
     void testEnumValues() {
         assertEquals(6, Afflatus.values().length);
@@ -54,16 +65,5 @@ class AfflatusTest {
         assertFalse(Afflatus.PLANT.isNativeAfflatus());
         assertTrue(Afflatus.SPIRIT.isNativeAfflatus());
         assertTrue(Afflatus.INTELLECT.isNativeAfflatus());
-    }
-
-    private static Stream<Arguments> provideValidTypes() {
-        return Stream.of(
-                Arguments.of(1, Afflatus.STAR),
-                Arguments.of(2, Afflatus.MINERAL),
-                Arguments.of(3, Afflatus.BEAST),
-                Arguments.of(4, Afflatus.PLANT),
-                Arguments.of(-1, Afflatus.SPIRIT),
-                Arguments.of(-2, Afflatus.INTELLECT)
-        );
     }
 }
