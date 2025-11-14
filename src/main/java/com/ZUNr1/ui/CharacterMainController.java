@@ -135,8 +135,76 @@ public class CharacterMainController {
     private VBox createSkillInformationTab(){
 
     }
-    private VBox createAttributesInformationTab(){
+    private GridPane createAttributesInformationTab(){
+        GridPane content = new GridPane();
+        content.setHgap(10);
+        content.setVgap(15);
+        content.setPadding(new Insets(20));
+        content.setStyle("-fx-padding: 20px;");
 
+        Label titleLabel = new Label("角色属性（默认满级）");
+        titleLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
+
+        Label healthLabel = new Label("生命值");
+        TextField healthField = attributesInput(30000,0,"10000");
+
+        Label attackLabel = new Label("攻击力");
+        TextField attackField = attributesInput(2000,0,"1000");
+
+        Label realityDefenseLabel = new Label("现实防御");
+        TextField realityDefenseField = attributesInput(2000,0,"500");
+
+        Label mentalDefenseLabel = new Label("精神防御");
+        TextField mentalDefenseField = attributesInput(2000,0,"500");
+
+        Label techniqueLabel = new Label("暴击技巧");
+        TextField techniqueField = attributesInput(2000,0,"500");
+
+        content.add(titleLabel, 0, 0, 2, 1);
+        content.add(healthLabel, 0, 1);
+        content.add(healthField, 1, 1);
+        content.add(attackLabel, 0, 2);
+        content.add(attackField, 1, 2);
+        content.add(realityDefenseLabel, 0, 3);
+        content.add(realityDefenseField, 1, 3);
+        content.add(mentalDefenseLabel, 0, 4);
+        content.add(mentalDefenseField, 1, 4);
+        content.add(techniqueLabel, 0, 5);
+        content.add(techniqueField, 1, 5);
+
+        return content;
+    }
+    private TextField attributesInput(int maxValue,int minValue,String defaultValue){
+        if (minValue > maxValue){
+            throw new IllegalArgumentException("最大限制小于最小限制");
+        }
+        TextField field = new TextField(defaultValue);
+        field.setPromptText(minValue + "~" + maxValue + "之间");
+        field.textProperty().addListener
+                ((observable,oldValue,newValue) -> {
+                    if (newValue == null || newValue.trim().isEmpty()){
+                        return;
+                        //为什么要return，因为如果我们不return结束这次的监听器，就会执行监听器的下一步操作（下一行的代码）
+                    }
+                    if (!newValue.matches("\\d*")){
+                        //String类的match()方法用于检查字符串是否与给定的正则表达式匹配
+                        //\d 表示匹配一个且仅一个数字字符（0-9）。  \d* 表示匹配零个或多个数字字符。
+                        //这里进行输入验证，新newValue如果没有完全数字，就去除（设为空）
+                        field.setText(newValue.replaceAll("[^\\d]",""));
+                        //[^ ] 表示否定字符类（匹配不在方括号内的字符）
+                        return;
+                    }
+                    if (!newValue.isEmpty()){
+                        //这里可以保证传来的数据一定是纯数字，当然不包含空格（空格也会被正则表达式检测到）
+                        int value = Integer.parseInt(newValue);
+                        if (value > maxValue){
+                            field.setText(String.valueOf(maxValue));
+                        }else if (value < minValue){
+                            field.setText(String.valueOf(minValue));
+                        }
+                    }
+                });
+        return field;
     }
     private VBox createOtherInformationTab(){
 
