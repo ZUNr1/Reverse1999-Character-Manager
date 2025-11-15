@@ -10,7 +10,6 @@ import java.util.List;
 
 public class CharacterMainController {
     private BorderPane root;
-    private List<TextField> extraSkillFields = new ArrayList<>();
 
     public CharacterMainController(){
         createInterface();
@@ -161,43 +160,20 @@ public class CharacterMainController {
 
         int currentRow = 0;
 
-        Label titleLabel = new Label("神秘术信息");
-        titleLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
-        content.add(titleLabel,0,currentRow,2,1);
-        currentRow++;
+        VBox skillsContainer = new VBox(15);
+        skillsContainer.setStyle("-fx-padding: 10px;");
+        skillsContainer.getChildren().addAll(createDetailedSkillPanel("神秘术I"),
+                createDetailedSkillPanel("神秘术II"),
+                createDetailedSkillPanel("至终的仪式"));
+        //创建一个垂直排列的容器，存放3个详细的技能面板，间距15像素。
 
-        Label skillNameLabel = new Label("神秘术名称");
-        skillNameLabel.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;");
-        content.add(skillNameLabel,0,currentRow,2,1);
-        currentRow++;
-        //神秘术I
-        Label skill1NameLabel = new Label("神秘术I");
-        TextField skill1NameField = new TextField();
-        skill1NameField.setPromptText("请输入神秘术名称");
-        content.add(skill1NameLabel,0,currentRow);
-        //第二列够长，不用横跨
-        content.add(skill1NameField,1,currentRow);
-        currentRow++;
-        //神秘术II
-        Label skill2NameLabel = new Label("神秘术II");
-        TextField skill2NameField = new TextField();
-        skill2NameField.setPromptText("请输入神秘术名称");
-        content.add(skill2NameLabel,0,currentRow);
-        content.add(skill2NameField,1,currentRow);
-        currentRow++;
-        //至终的仪式
-        Label skill3NameLabel = new Label("至终的仪式");
-        TextField skill3NameField = new TextField();
-        skill3NameField.setPromptText("请输入至终的仪式名称");
-        content.add(skill3NameLabel,0,currentRow);
-        content.add(skill3NameField,1,currentRow);
-        currentRow++;
         //额外技能区域
         Label extraSkillsNameLabel = new Label("额外神秘术");
-        content.add(extraSkillsNameLabel,0,currentRow);
+        content.add(extraSkillsNameLabel,0,currentRow,2,1);
+        //涵盖两列
 
         Button extraSkillsAdd = new Button("+ 添加额外技能");
-        content.add(extraSkillsAdd,1,currentRow);
+        content.add(extraSkillsAdd,1,currentRow,2,1);
         currentRow++;
 
         VBox extraSkillsContainer = new VBox(10);//间距10像素
@@ -207,58 +183,119 @@ public class CharacterMainController {
         content.add(extraSkillsContainer,0,currentRow,2,1);
 
         extraSkillsAdd.setOnAction(actionEvent -> addExtraSkills(extraSkillsContainer));
-        //思路是使用VBox和HBox，添加
+
+        skillsContainer.getChildren().addAll(extraSkillsNameLabel,extraSkillsAdd,extraSkillsContainer);
+
+        ScrollPane scrollPane = new ScrollPane(skillsContainer);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setPrefViewportHeight(350);
+        //ScrollPane：让内容可以上下滚动,每个技能内容很多，可能会超限，我们使用滚动布局
+        //setFitToWidth(true)：内容自动适应宽度
+        //setPrefViewportHeight(350)：设置可见区域高度为350像素
+        scrollPane.setStyle("-fx-background: white; -fx-border-color: #bdc3c7; -fx-border-width: 1;");
+        content.add(scrollPane,0,currentRow,2,1);
+        currentRow++;
+
+
 
 
         return content;
     }
-    private void addExtraSkills(VBox container){
-        HBox skillRow = new HBox(10);//间距10像素
-        //将其所有子节点在水平方向（Horizontal）上一个接一个地排列。
-        skillRow.setAlignment(Pos.CENTER_LEFT);
-        //设置子节点在容器内垂直居中、水平靠左对齐
-        skillRow.setStyle("-fx-padding: 8px; -fx-border-color: #ecf0f1;-fx-border-width: 1; -fx-background-color: #f8f9fa;");
-
-        Label extraSkillNameLabel = new Label("额外神秘术名称");
-        TextField extraSkillNameField = new TextField();
-        extraSkillNameField.setPromptText("请输入额外神秘术名称");
-
-        Button removeExtraSkill = new Button("删除");
-        removeExtraSkill.setOnAction
-                (actionEvent -> {
-                    container.getChildren().remove(skillRow);
-                    //删除这个组件，skillRow不再被container引用
-                    //所以后续代码还会执行，但是不再关联container
-                    extraSkillFields.remove(extraSkillNameField);
-                    //把存的对应数据的List里面的值也删除了
-                });
-        skillRow.getChildren().addAll(extraSkillNameLabel,extraSkillNameField,removeExtraSkill);
-        //把组件加入HBox，就会水平排序
-        container.getChildren().add(skillRow);
-        //把HBox加入总布局
-        //注意，这行代码是在button按下前执行的，先关联container，然后再处理
-        extraSkillFields.add(extraSkillNameField);
-    }
-    private GridPane createSkill(String skillInformation,int startRow){
+    private GridPane createDetailedSkillPanel(String skillInformation){
         GridPane skillPane = new GridPane();
-        skillPane.setHgap(8);
-        skillPane.setVgap(10);
-        skillPane.setPadding(new Insets(12));
+        skillPane.setHgap(10);
+        skillPane.setVgap(12);
+        skillPane.setPadding(new Insets(15));
         skillPane.setStyle("-fx-border-color: #bdc3c7; -fx-border-width: 1; -fx-background-color: #ecf0f1;");
-
         int row = 0;
+
+        Label titleLabel = new Label(skillInformation);
+        if ("至终的仪式".equals(skillInformation)) {
+            titleLabel.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #e74c3c;");
+        } else {
+            titleLabel.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;");
+        }
+        skillPane.add(titleLabel,0,row,2,1);
+        row++;
+
         Label nameLabel = new Label("神秘术名称");
         TextField nameField = new TextField();
         nameField.setPromptText("请输入" + skillInformation + "名称");
         skillPane.add(nameLabel,0,row);
-        skillPane.add(nameField,1,row,3,1);
+        skillPane.add(nameField,1,row);
         row++;
 
-        Label level1Label = new Label("一星牌");
-
-
-        return new GridPane();
+        skillPane.add(createSkillLevelSection("一星牌"),0,row,2,1);
+        row += 4;
+        skillPane.add(createSkillLevelSection("二星牌"),0,row,2,1);
+        row += 4;
+        skillPane.add(createSkillLevelSection("三星牌"),0,row,2,1);
+        return skillPane;
     }
+    private GridPane createSkillLevelSection(String skillLevel){
+        GridPane levelPane = new GridPane();
+        levelPane.setHgap(10);
+        levelPane.setVgap(8);
+        levelPane.setPadding(new Insets(10));
+        levelPane.setStyle("-fx-border-color: #d5dbdb; -fx-border-width: 1; -fx-background-color: #f4f6f6;");
+
+        int levelRow = 0;
+
+        Label levelLabel = new Label(skillLevel);
+        levelLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #7f8c8d;");
+        levelPane.add(levelLabel,0,levelRow,2,1);
+        levelRow++;
+
+        Label describeLabel = new Label("神秘术描述");
+        TextArea describeArea = new TextArea();
+        //与 TextField（单行文本框）不同，TextArea 可以容纳和显示多行文本。
+        //当文本超出显示区域时，它会自动出现滚动条。
+        describeArea.setPromptText("输入" + skillLevel + "技能效果");
+        describeArea.setPrefRowCount(4);
+        //设置初始行数row为4行
+        describeArea.setWrapText(true);
+        //设置自动换行，当输入不能一行显示，就换行
+        levelPane.add(describeLabel,0,levelRow);
+        levelPane.add(describeArea,1,levelRow);
+        levelRow++;
+
+        Label storyLabel = new Label("神秘术故事");
+        TextArea storyArea = new TextArea();
+        storyArea.setPromptText("输入" + skillLevel + "背景故事");
+        storyArea.setPrefRowCount(2);
+        storyArea.setWrapText(true);
+        levelPane.add(storyLabel,0,levelRow);
+        levelPane.add(storyArea,1,levelRow);
+        levelRow++;
+
+        Label typeLabel = new Label("神秘术类型");
+        ComboBox<String> skillTypeComBox = new ComboBox<>();
+        skillTypeComBox.getItems().addAll("攻击","增益","减益","治疗","吟诵","特殊","即兴咒语");
+        levelPane.add(typeLabel,0,levelRow);
+        levelPane.add(skillTypeComBox,1,levelRow);
+
+        return levelPane;
+    }
+    private void addExtraSkills(VBox container){
+        GridPane extraSkillPane = createDetailedSkillPanel("额外神秘术");
+
+        Button removeExtraSkill = new Button("删除");
+        removeExtraSkill.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white;");
+
+        VBox skillSelection = new VBox(15);
+        skillSelection.getChildren().addAll(extraSkillPane,removeExtraSkill);
+        //把组件加入VBox，就会垂直排序
+        container.getChildren().add(skillSelection);
+        //注意，这行代码是在button按下前执行的，先关联container，然后再处理
+        removeExtraSkill.setOnAction
+                (actionEvent -> {
+                    container.getChildren().remove(skillSelection);
+                    //删除这个组件，skillSelection不再被container引用
+                    //所以后续代码还会执行，但是不再关联container
+                    //注意，与container直接管联的是skillSelection而不是extraSkillPane
+                });
+    }
+
     private GridPane createAttributesInformationTab(){
         GridPane content = new GridPane();
         content.setHgap(10);
