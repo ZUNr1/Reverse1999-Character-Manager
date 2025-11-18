@@ -52,6 +52,7 @@ public class CharacterFormData {
     private Map<String, String> usedTerms; // Map<"术语名", "术语描述">
 
     // 狂想信息
+    private Map<String,String> euphoriaNames;
     private Map<String, Map<String, String>> euphoriaDescribes; // 狂想ID -> 等级 -> 描述
     private Map<String, Map<String, Integer>> euphoriaAttributes; // 狂想ID -> 属性类型 -> 数值
 
@@ -360,5 +361,37 @@ public class CharacterFormData {
 
     public void setStoryDescribes(Map<String, String> storyDescribes) {
         this.storyDescribes = storyDescribes;
+    }
+
+    public String getEnName() {
+        return enName;
+    }
+
+    public void setEnName(String enName) {
+        this.enName = enName;
+    }
+
+    public Map<String, Map<String, String>> getEuphoriaDescribes() {
+        return euphoriaDescribes;
+    }
+
+    public void setEuphoriaDescribes(Map<String, Map<String, String>> euphoriaDescribes) {
+        this.euphoriaDescribes = euphoriaDescribes;
+    }
+
+    public Map<String, Map<String, Integer>> getEuphoriaAttributes() {
+        return euphoriaAttributes;
+    }
+
+    public void setEuphoriaAttributes(Map<String, Map<String, Integer>> euphoriaAttributes) {
+        this.euphoriaAttributes = euphoriaAttributes;
+    }
+
+    public Map<String, String> getEuphoriaNames() {
+        return euphoriaNames;
+    }
+
+    public void setEuphoriaNames(Map<String, String> euphoriaNames) {
+        this.euphoriaNames = euphoriaNames;
     }
 }
