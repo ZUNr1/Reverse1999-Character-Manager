@@ -152,6 +152,18 @@ public class CharacterMainController {
         return buttonBox;
     }
     private void confirmInput(){
+        // 1. 先收集数据到formData
+        try {
+            CharacterDataService dataService = new CharacterDataService();
+            dataService.populateFormDataFromUI(formData, basicInformationTab, attributesInformationTab,
+                    skillInformationTab, progressionInformationTab,
+                    usedTermInformationTab, euphoriaInformationTab,
+                    otherInformationTab);
+        } catch (Exception e) {
+            showAlert("数据错误", "数据收集失败: " + e.getMessage(), Alert.AlertType.ERROR);
+            return;
+        }
+        //再进行验证
         ValidationResult result = validateAllTabs();
         if (!result.isValid()) {
             showValidationAlert(result.getMessage());
@@ -172,10 +184,10 @@ public class CharacterMainController {
         saveForCharacterData();
 
     }
-    private String checkDuplicateCharacter() {//先不保存，直接检查，过了才进行转换
-        String id = getIdField().getText().trim();
-        String name = getNameField().getText().trim();
-        String enName = getEnNameField().getText().trim();
+    private String checkDuplicateCharacter() {//直接检查，过了才进行转换
+        String id = formData.getId();
+        String name = formData.getName();
+        String enName = formData.getEnName();
 
         return storageService.checkDuplicateCharacter(id, name, enName);
     }

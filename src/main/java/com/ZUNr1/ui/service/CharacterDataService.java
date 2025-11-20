@@ -66,6 +66,7 @@ public class CharacterDataService {
             }
             skillDescribes.put(skillEntry.getKey(),levelDescribes);
         }
+        formData.setSkillDescribes(skillDescribes);
 
         Map<String,Map<String,String>> skillStories = new HashMap<>();
         for (Map.Entry<String,Map<String,TextArea>> skillEntry : skillInformationTab.getSkillStoryFields().entrySet()){
@@ -75,6 +76,8 @@ public class CharacterDataService {
             }
             skillStories.put(skillEntry.getKey(),levelStory);
         }
+        formData.setSkillStories(skillStories);
+        
         Map<String, Map<String, SkillType>> skillTypes = new HashMap<>();
         for (Map.Entry<String, Map<String, ComboBox<String>>> skillEntry : skillInformationTab.getSkillTypeFields().entrySet()) {
             Map<String, SkillType> levelTypes = new HashMap<>();

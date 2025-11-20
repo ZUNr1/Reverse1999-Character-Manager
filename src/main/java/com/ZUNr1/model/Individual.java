@@ -26,6 +26,7 @@ public abstract class Individual {
         this.id = builder.id;
         this.name = builder.name;
         this.enName = builder.enName;
+        this.creator = builder.creator;//因为少了这一行，导致出问题，找了一个小时
         this.gender = builder.gender;
         this.afflatus = builder.afflatus;
         this.damageType = builder.damageType;
