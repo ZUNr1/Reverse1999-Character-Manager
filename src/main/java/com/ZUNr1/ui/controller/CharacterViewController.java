@@ -3,7 +3,10 @@ package com.ZUNr1.ui.controller;
 import com.ZUNr1.manager.CharacterManage;
 import com.ZUNr1.model.Characters;
 import com.ZUNr1.service.CharacterStorageService;
+import com.ZUNr1.ui.view.CharacterDetailView;
 import com.ZUNr1.ui.view.CharacterListView;
+import javafx.scene.Scene;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 import java.util.ArrayList;
@@ -15,7 +18,7 @@ public class CharacterViewController {
     private final CharacterStorageService storageService;
     private final CharacterManage characterManage;
     private final CharacterListView listView;
-    private Stage primaryStage;
+    private CharacterDetailView characterDetailView;
     public CharacterViewController(){
         this.storageService = new CharacterStorageService();
         this.characterManage = storageService.getCharacterManage();
@@ -28,9 +31,7 @@ public class CharacterViewController {
         //两个冒号表示方法引用，类名冒号静态方法名和实例名冒号方法名，并不是调用，这里就没有调用，而是把方法的引用传给搜索回调（如果直接写方法名就会运行一次这个方法）
         //这里这个方法的引用使用了Consumer函数式接口
         //这是设置搜索回调，因为listView里面用到了，必须初始化的时候就设置
-    }
-    public void setPrimaryStage(Stage primaryStage) {
-        this.primaryStage = primaryStage;
+        listView.setOnCharacterClick(this::handleCharacterClick);
     }
     private void loadAndDisplayAllCharacters(){
         List<Characters> charactersList = characterManage.findAllCharacters();
@@ -67,7 +68,17 @@ public class CharacterViewController {
             }
         }
     }
+    private void handleCharacterClick(Characters character){
+        System.out.println("跳转到角色详情页: " + character.getName());
+        characterDetailView = new CharacterDetailView(character);
+        characterDetailView.showDetailInformation();
+        Scene currentScene = listView.getRoot().getScene();
+        //哎呀想半天没有注意到，直接getRoot再getScene就可以获得场景了
+        if (currentScene != null){
+            currentScene.setRoot(characterDetailView.getRoot());
+        }
 
+    }
     public CharacterListView getListView() {
         return listView;
     }

@@ -21,7 +21,9 @@ public class CharacterListView {
     private List<Characters> allCharacters; // 保存所有角色数据
     private Consumer<String> onSearchRequest;
     // 搜索回调,是一种回调函数，在搜索动作发生时被自动调用，用来处理搜索业务逻辑。
+    //回调是一种编程模式：定义"当某件事发生时，调用这个函数"
     //Consumer<String>接收参数不返回值，函数式接口，accept()可以接收值的传入，我们可以对这个接口写方法来实现(在另一个类实现)
+    private Consumer<Characters> onCharacterClick;
     public CharacterListView() {
         initializeUI();
         setupSearchListener();
@@ -46,7 +48,7 @@ public class CharacterListView {
 
         // 搜索框
         searchField = new TextField();
-        searchField.setPromptText("搜索角色名称、英文名或创作者...");
+        searchField.setPromptText("搜索角色名称、英文名");
         searchField.setPrefWidth(300);
 
         // 统计信息
@@ -91,6 +93,10 @@ public class CharacterListView {
                 onSearchRequest.accept(newValue.trim());
                 //接收String，不返回值，就是Consumer<String>函数式接口的效果
                 //解耦：事件源（ListView）不知道也不关心具体的处理逻辑，只需要在适当的时候调用注册的方法即可。
+                //用户输入时立即触发搜索，无需点击搜索按钮
+                //主UI线程不会被阻塞，界面保持流畅
+                //实时反馈搜索结果，提升用户体验
+                //方便后续改为异步的优化处理，而且可以添加多个搜索回调
             }
         });
         searchField.setOnAction(actionEvent -> {
@@ -137,7 +143,9 @@ public class CharacterListView {
             // 添加点击事件（后续可以跳转到详情）
             card.setOnMouseClicked(event -> {
                 System.out.println("点击角色: " + character.getName());
-                // TODO: 跳转到详情页
+                if (onCharacterClick != null){
+                    onCharacterClick.accept(character);
+                }
             });
 
             cardsContainer.getChildren().add(card);
@@ -161,6 +169,9 @@ public class CharacterListView {
     public void setOnSearchRequest(Consumer<String> onSearchRequest) {
         this.onSearchRequest = onSearchRequest;
         //这里我们接收外部的回调函数，就是说这个回调函数的具体实现在其他类，实现后传过来使用
+    }
+    public void setOnCharacterClick(Consumer<Characters> onCharacterClick){
+        this.onCharacterClick = onCharacterClick;
     }
 
     public TextField getSearchField() {
