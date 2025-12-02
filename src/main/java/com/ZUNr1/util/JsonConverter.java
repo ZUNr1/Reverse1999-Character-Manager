@@ -14,6 +14,7 @@ public class JsonConverter {
     }
     //把Java的对象转换为json格式的字符串
     public static String toString(Object object){
+        //todo 搞明白对于泛型对象，到底擦除后需不需要处理，还是说会记得类型
         //这接收的是对象
         if (object == null){
             return null;
@@ -22,6 +23,7 @@ public class JsonConverter {
             return mapper.writeValueAsString(object);
             //这个方法可以将Java的对象（Object）转换为json格式的字符串
             //writeValue方法是直接写入json文件，writeValueAsString是转换为字符串，没有写入
+            //writeValue方法内部默认帮我们关闭了文件流，而writeValueAsString是纯内存操作，不用IO流
         } catch (Exception e) {
             throw new RuntimeException("JSON序列化失败: " + object.getClass().getName(), e);
         }

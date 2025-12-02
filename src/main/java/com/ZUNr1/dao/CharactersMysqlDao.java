@@ -10,10 +10,7 @@ import com.ZUNr1.util.JsonConverter;
 import com.ZUNr1.util.JsonDataLoader;
 import com.fasterxml.jackson.core.type.TypeReference;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -152,28 +149,31 @@ public class CharactersMysqlDao {
         //我们需要catch到错误进行回滚，要在执行catch时不能关闭
         try {
             connection = DataBaseConnection.getConnection();
+            connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+            // todo 搞懂隔离级别相关的问题是什么
             connection.setAutoCommit(false);
             //setAutoCommit(false): 禁用自动提交，开启事务模式。这样所有的 SQL 操作都在一个事务中，要么全部成功，要么全部回滚
-            if (isClear){
+            if (isClear) {
                 String deleteSql = "DELETE FROM " + TABLE_NAME;
-                try (PreparedStatement preparedStatement = connection.prepareStatement(deleteSql)){
+                try (PreparedStatement preparedStatement = connection.prepareStatement(deleteSql)) {
                     //这里用了try-and-resource处理PrepareStatement
                     int deleteRow = preparedStatement.executeUpdate();
                     //这个方法是执行一次存入的sql指令，返回一个int表示影响的行数
                     //与executeQuery()区分，这个是在查询的时候使用
+                    //这个方法也是可以安全防止sql注入的
                     System.out.println("删除了" + deleteRow + "行记录");
                 }
-                int savedCount = 0;
-                for (Characters character : charactersList){
-                    if (saveCharacters(character,connection)){
-                        savedCount++;
-                    }
-                }
-                connection.commit();
-                //这里提交事务，运行到这里还没有出错就可以了，防止删除了却没有保存导致数据丢失
-                System.out.println("成功保存 " + savedCount + " 个角色到MySQL");
             }
-
+            //不管有没有clear，后面的保存角色都应该做
+            int savedCount = 0;
+            for (Characters character : charactersList) {
+                if (saveCharacters(character, connection)) {
+                    savedCount++;
+                }
+            }
+            connection.commit();
+            //这里提交事务，运行到这里还没有出错就可以了，防止删除了却没有保存导致数据丢失
+            System.out.println("成功保存 " + savedCount + " 个角色到MySQL");
         }catch (SQLException e){
             if (connection != null){
                 try {
@@ -197,11 +197,141 @@ public class CharactersMysqlDao {
         }
     }
     private boolean saveCharacters(Characters character,Connection connection) throws SQLException{
-        //todo 完成保存思路
-        return false;
+        if (isCharactersExists(character.getId(), connection)){
+            return updateCharacters(character,connection);
+        }else {
+            return insertCharacters(character,connection);
+        }
     }
+    private boolean isCharactersExists(String id,Connection connection) throws SQLException{
+        //异常交给上级处理
+        if (id == null || id.trim().isEmpty() || connection == null){
+            return false;
+        }
+        String selectSql = "SELECT id FROM " + TABLE_NAME + " WHERE id = ?";
+        //千万不要在sql里面写分号，同时不要直接把用户输入的变量直接放入sql语句，变量可能是恶意的有实际效果的sql语句
+        try (PreparedStatement preparedStatement = connection.prepareStatement(selectSql)){
+            preparedStatement.setString(1,id);
+            //preparedStatement.setString(int parameterIndex, String value);
+            //这句话的意思是就是在第一个问号？处使用id替换
+            //使用这个方法主要是防止sql恶意注入，比如外界输入的id要是包含--，--在sql里面会被解读为注释，就会注释掉后续的语句导致不可控后果
+            //而setString方法可以理解参数信息，将id解读为纯粹的字符串，就会修改sql语句（比如‘就会变为’‘避免产生歧义）
+            //另外，多次执行同一sql语句时，会更快，会有格式的缓存
+            try (ResultSet resultSet = preparedStatement.executeQuery()){
+                //executeQuery()一般用来执行查询语句，返回ResultSet对象
+                //executeUpdate()一般执行更新语句，返回修改了多少行
+                return resultSet.next();
+            }
+        }
+    }
+    private boolean insertCharacters(Characters character,Connection connection) throws SQLException{
+        String insertSql = "INSERT INTO " + TABLE_NAME + " (" +
+                "id,name,en_name,is_custom,creator,rarity,gender,afflatus,damage_type," +
+                "attributes,skills,used_term,inheritance,portrait,euphoria,other_information) " +
+                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+        //问好同样是用于后续setString填入
+        try (PreparedStatement preparedStatement = connection.prepareStatement(insertSql)){
+            setPreparedStatementValue(character,preparedStatement,true);
+            //上行就是实际的转换方法
+            return preparedStatement.executeUpdate() > 0;
+        }
+
+    }
+    private boolean updateCharacters(Characters character,Connection connection) throws SQLException{
+        String updateSql = "UPDATE " + TABLE_NAME + " SET " +
+                "name = ?, " +
+                "en_name = ?, " +
+                "is_custom = ?, " +
+                "creator = ?, " +
+                "rarity = ?, " +
+                "gender = ?, " +
+                "afflatus = ?, " +
+                "damage_type = ?, " +
+                "attributes = ?, " +
+                "skills = ?, " +
+                "used_term = ?, " +
+                "inheritance = ?, " +
+                "portrait = ?, " +
+                "euphoria = ?, " +
+                "other_information = ? " +
+                "WHERE id = ?";//where语句放在最后
+        try (PreparedStatement preparedStatement = connection.prepareStatement(updateSql)){
+            setPreparedStatementValue(character,preparedStatement,false);
+            preparedStatement.setString(16, character.getId());
+            //第16个参数是id字段
+            return preparedStatement.executeUpdate() > 0;
+        }
+    }
+    private void setPreparedStatementValue(Characters character, PreparedStatement preparedStatement,boolean forInsert)
+            throws SQLException{
+        //这个方法是将角色的字段转换为sql语句value里面对应的值
+        int index = 1;
+        if (forInsert){
+            preparedStatement.setString(index++, character.getId());
+        }
+        preparedStatement.setString(index++, character.getName());
+        preparedStatement.setString(index++,character.getEnName());
+        preparedStatement.setBoolean(index++,character.isCustom());
+        //boolean类型用setBoolean
+        preparedStatement.setString(index++, character.getCreator());
+        preparedStatement.setInt(index++,character.getRarity());
+
+        //枚举类需要处理空指针异常，对于枚举类特有的默认实现的name方法会抛这个异常，我们用单独的方法处理
+        setEnumField(preparedStatement, index++, character.getGender());
+        setEnumField(preparedStatement, index++, character.getAfflatus());
+        setEnumField(preparedStatement, index++, character.getDamageType());
+
+        //json字段要写个方法单独处理
+        setJsonField(preparedStatement,index++,character.getAttributes());
+        setJsonField(preparedStatement,index++,character.getSkills());
+        setJsonField(preparedStatement,index++,character.getUsedTerm());
+        setJsonField(preparedStatement,index++,character.getInheritance());
+        setJsonField(preparedStatement,index++,character.getPortrait());
+        setJsonField(preparedStatement,index++,character.getEuphoria());
+        setJsonField(preparedStatement,index++,character.getOtherInformation());
+        //我们不需要处理创建时间和更新时间，因为我们在mysql数据库中指定了这两参数的自动更新逻辑
+
+
+    }
+    private void setEnumField(PreparedStatement preparedStatement,int index,Enum<?> enumValue)
+            throws SQLException{
+        if (enumValue != null){
+            preparedStatement.setString(index,enumValue.name());
+            //一般的类是没有默认实现的name方法的，枚举类有，返回的是枚举的字符串(全大写的那个)
+        }else {
+            //这里不能一并设置为null，有默认值的，我们mysql指定了not null
+            switch (index) {
+                case 7: // gender字段位置
+                    preparedStatement.setString(index, "OTHER");
+                    break;
+                case 8: // afflatus字段位置
+                    preparedStatement.setString(index, "STAR");
+                    break;
+                case 9: // damage_type字段位置
+                    preparedStatement.setString(index, "GENESIS");
+                    break;
+                default:
+                    preparedStatement.setString(index, ""); // 其他情况给空字符串
+            }
+        }
+
+    }
+    private void setJsonField(PreparedStatement preparedStatement,int index,Object value)
+            throws SQLException{
+        //吐槽，向上抛出异常确实不错，不然要写好多catch
+        if (value != null){
+            String json = JsonConverter.toString(value);
+            //自制类的方法，将对象使用ObjectMapper的writeValueAsString方法获得String
+            preparedStatement.setString(index,json);
+        }else {
+            preparedStatement.setNull(index, Types.VARCHAR);
+            //setNull方法也是需要两个，一个是对应的问号，另一个是这个字段在mysql里面的类型，这里是VARCHAR
+        }
+
+    }
+
     private void clearTable(){
-        //这个方法要小心，虽然TRUNCATE TABLE块，但是不能用事务回滚，清空了就找不回来了，所以我写了但是不用
+        //这个方法要小心，虽然TRUNCATE TABLE块，但是不能用事务回滚，清空了就找不回来了，所以我写了但是不用，最好是不使用
         String clearSql = "TRUNCATE TABLE " + TABLE_NAME;
         //与DELETE FROM相比，TRUNCATE TABLE更加高效，清空所有数据用这个，更快
         //但是这个不能rollback回滚，需要权限高

@@ -47,6 +47,7 @@ public class JsonDataPersister {
             //writeValue可以实现写入json
             //filePath只是对象的地址，是String，但是writeValue左边的参数是File对象
             //我们new一个File对象做参数
+            //这里是对文件操作，需要关闭流，但是方法内部已经帮我们关闭了，我们不用管
         } catch (IOException e) {
             throw new RuntimeException("保存角色数据失败", e);
             //提供上下文信息
